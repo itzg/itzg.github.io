@@ -38,6 +38,7 @@ Some specifics will need to be declared within your `pom.xml`.
 
 #### SCM section
 Add the following section to the top level of your `pom.xml` but replace the following placeholders with your GitHub specifics:
+
 * `[[user]]`
 * `[[repo]]`
 
