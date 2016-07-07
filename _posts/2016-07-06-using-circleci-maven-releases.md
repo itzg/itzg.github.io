@@ -16,6 +16,7 @@ A helper script is needed to execute the Maven release (and deploy) sequence, so
 
 ### settings.xml
 Add a `settings.xml` to your project's base directory to convey the server credentials needed to publish to Bintray. The following content can be used as is for that file:
+
 ```
 <?xml version='1.0' encoding='UTF-8'?>
 <settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
@@ -60,6 +61,7 @@ Declare the latest deploy plugin to avoid a bug in older versions that would lea
 
 #### Distribution management section
 To complement the Bintray configuration in `settings.xml`, add the following text as is to the top level of your `pom.xml`:
+
 ```
 <distributionManagement>
   <repository>
@@ -73,6 +75,7 @@ To complement the Bintray configuration in `settings.xml`, add the following tex
 
 ### circle.yml
 We'll hook the release process into the `deployment` stage of your CircleCI build configuration. Use the following snippet as an example for yours. You can specify your mainline branch instead of `master`, if needed.
+
 ```
 deployment:
   releases:
@@ -139,6 +142,7 @@ In the POST URL, replace these parameters (or use the param editor in a tool lik
 * `:project` : GitHub project name
 * `:branch` : the branch to build, which needs to match the `branch` configured in your `circle.yml`, above.
 * `:token` : an API token allocated from the [API Tokens section in your account settings](https://circleci.com/account/api)
+
 ```
 curl -X POST -H "Content-Type: application/json" -d '{
     "build_parameters": {
