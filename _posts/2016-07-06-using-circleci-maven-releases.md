@@ -133,12 +133,14 @@ At the time of writing this, the `git push` works only with the choice of "Ubunt
 When you're ready to perform a release, invoke the [CircleCI parameterized build API](https://circleci.com/docs/parameterized-builds/) to trigger a build. 
 
 In the POST body, replace these placeholders:
+
 * `[[tag]]` : this will be the Git tag of the release and the default release name. GitHub recommends you prefix the tag with a "v" and use [semantic versioning](http://semver.org/).
 * `[[version]]` : this will be the Maven project's version, which is typically the same as the `tag` but without the "v" prefix.
 * `[[next]]` : this is the next snapshot version you'll want to use for continued development after the release. I recommend using a two-part shortening of the semantic version with the minor version bumped up to the next.
 * `[[email]]` : your email address as configured in your GitHub account
 
 In the POST URL, replace these parameters (or use the param editor in a tool like [Postman](https://www.getpostman.com/)):
+
 * `:username` : GitHub username
 * `:project` : GitHub project name
 * `:branch` : the branch to build, which needs to match the `branch` configured in your `circle.yml`, above.
