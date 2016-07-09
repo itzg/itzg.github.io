@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "Lessons learned switching to java apline base image"
+title:  "Lessons learned switching to Java Alpine Docker base image"
 
 ---
 
