@@ -37,5 +37,13 @@ will result in a user than can't be used with an `su -c` invocation since no she
 
 Since `sudo` isn't installed by default and we want to minimize adding more packages (to lower security exposure), then use `su` instead. To run a command as a system user (with an explicit shell configured as above), use something like
 
+    su -c "command" sysuser
+
+### Don't use an extra dash in su
+
+Originally I was putting a dash before the username when invoking `su` thinking that it was a definitive way to tell it where the command ending, like
+
     su -c "command" - sysuser
+
+It turns out giving the dash disables propagation of the environment variables, which is bad since Docker containers use environment variables to pass inputs.
 
