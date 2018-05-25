@@ -292,7 +292,7 @@ kubectl apply -f rbac
 <p>Verify that the claim was provisioned and is bound by using</p>
 <pre class=" language-bash"><code class="prism  language-bash">kubectl describe pvc claim1
 </code></pre>
-<p>Let’s run a real-world test of the persistent volume backed by ceph rbd by running a busybox container that just sleeps so that we can <code>exec</code> into it:</p>
+<p>Let’s test out the persistent volume backed by ceph rbd by running a little busybox container that just sleeps so that we can <code>exec</code> into it:</p>
 <pre class=" language-yaml"><code class="prism  language-yaml"><span class="token key atrule">apiVersion</span><span class="token punctuation">:</span> v1
 <span class="token key atrule">kind</span><span class="token punctuation">:</span> Pod
 <span class="token key atrule">metadata</span><span class="token punctuation">:</span>
