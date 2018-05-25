@@ -45,8 +45,8 @@ net.bridge.bridge-nf-call-iptables = 0
 <pre><code>ACTION=="add", SUBSYSTEM=="net", KERNEL!="lo", RUN+="/lib/systemd/systemd-sysctl --prefix=/net/bridge"
 </code></pre>
 <h3 id="create-vms-using-libvirtkvmqemu">Create VMs using libvirt+KVM+QEMU</h3>
-<p>Download my helper script <a href="https://gist.github.com/itzg/5b88fb1ec9ffd7a63b431010a81423a0">from this gist</a> and set it to be executable:</p>
-<pre><code>wget https://gist.githubusercontent.com/itzg/5b88fb1ec9ffd7a63b431010a81423a0/raw/c6c849650d2a55758eab8f98963a38ca8f1439bd/create-vm.sh
+<p>Download my helper script <a href="https://github.com/itzg/libvirt-tools">from my libvirt-tools repo</a> and set it to be executable:</p>
+<pre><code>wget https://raw.githubusercontent.com/itzg/libvirt-tools/master/create-vm.sh
 chmod +x create-vm.sh
 </code></pre>
 <p>I am going to create three VMs. My network has static IP address space starting at 192.168.0.150, so I’m configuring my VMs starting from that address.</p>
