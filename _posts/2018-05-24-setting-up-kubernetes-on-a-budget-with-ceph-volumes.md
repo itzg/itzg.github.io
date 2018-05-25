@@ -12,7 +12,7 @@
 <li>i5 dual-core, hyperthreaded processor</li>
 <li>16 GB RAM</li>
 <li>240 GB SSD with about 100 GB dedicated to VM images</li>
-<li>Ubuntu Xenial 16.0.4.4</li>
+<li>Ubuntu Xenial 16.04.4</li>
 <li>Kernel 4.4.0-124</li>
 </ul>
 <p>It has plenty of RAM for three VMs, but I’m going to be knowingly overcommitting the vCPU count of 6 (2 x 3 VMs) since there’s only 4 logical processors on my system. I’m not going to be running stressful workloads, so hopefully that works out.</p>
