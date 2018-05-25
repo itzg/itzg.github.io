@@ -3,16 +3,16 @@
 
 ---
 
-<p>I have been really excited to use <a href="https://kubernetes.io/">Kubernetes</a> (aka k8s) in a semi-production way on my home server; however, there is only one of said server and not the 3+ that seem to be typical of a minimal kubernetes deployment. At the same time, I know there’s <a href="https://github.com/kubernetes/minikube/">minikube</a> and similar, but those give a strong sense of development-time, experimental usage. I want a small scale, but <strong>real</strong> kubernetes experience.</p>
-<p>Similarly, I want to be like all the cool kids and use persistent volumes that retain the pod volumes no matter where the pods are scheduled across the cluster. For that, Ceph works out as a great, scalable storage solution.</p>
-<p>In this article I’ll show how to use a little libvirt+KVM+QEMU wrapper script to create three VMs, deploy kubernetes using <code>kube-adm</code> and overlay a ceph cluster using <code>ceph-deploy</code>.</p>
-<h2 id="my-setup">My setup</h2>
+<p>I have been really excited to use <a href="https://kubernetes.io/">Kubernetes</a> (aka k8s) in a semi-production way on my home server; however, there is only one of said server and not the 3+ that seem to be typical of a minimal kubernetes deployment. At the same time, I know there’s <a href="https://github.com/kubernetes/minikube/">minikube</a> and similar, but those give a strong sense of development-time, experimental usage. I want a small scale, but <em>real</em> kubernetes experience.</p>
+<p>For me, an additional requirement to make it a real deployment is that it should support stateful services. One of the things I like about kubernetes is that <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volumes</a> are a first-class construct supported in various real-world ways. Since I’m working with a tight budget and a single server, I narrowed my search to open source, software-defined storage solutions. <a href="https://ceph.com/">Ceph</a> worked out well for me since it was easy to setup, scaled down without compromises, and is full of features.</p>
+<p>In this article I’ll show how to use a little libvirt+KVM+QEMU wrapper script to create three VMs, deploy kubernetes using <code>kube-adm</code> and overlay a ceph cluster using <code>ceph-deploy</code>. The setup might appear tedious, but the benefits and ease of kubernetes usage afterwards are well worth it</p>
+<h2 id="my-environment">My environment</h2>
 <p>If you’re following along, it might help to know what I’m using to see how that aligns with what you’re using. My one and only home server is an <a href="https://www.intel.com/content/www/us/en/products/boards-kits/nuc.html">Intel NUC</a> with</p>
 <ul>
 <li>i5 dual-core, hyperthreaded processor</li>
 <li>16 GB RAM</li>
 <li>240 GB SSD with about 100 GB dedicated to VM images</li>
-<li>Ubuntu Xenial 16.04.4</li>
+<li>Ubuntu Xenial 16.0.4.4</li>
 <li>Kernel 4.4.0-124</li>
 </ul>
 <p>It has plenty of RAM for three VMs, but I’m going to be knowingly overcommitting the vCPU count of 6 (2 x 3 VMs) since there’s only 4 logical processors on my system. I’m not going to be running stressful workloads, so hopefully that works out.</p>
