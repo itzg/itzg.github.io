@@ -4,7 +4,7 @@
 ---
 
 <p>I have been really excited to use <a href="https://kubernetes.io/">Kubernetes</a> (aka k8s) in a semi-production way on my home server; however, there is only one of said server and not the 3+ that seem to be typical of a minimal kubernetes deployment. At the same time, I know there’s <a href="https://github.com/kubernetes/minikube/">minikube</a> and similar, but those give a strong sense of development-time, experimental usage. I want a small scale, but <em>real</em> kubernetes experience.</p>
-<p>For me, an additional requirement to make it a real deployment is that it should support stateful services. One of the things I like about kubernetes is that <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volumes</a> are a first-class construct supported in various real-world ways. Since I’m working with a tight budget and a single server, I narrowed my search to open source, software-defined storage solutions. <a href="https://ceph.com/">Ceph</a> worked out well for me since it was easy to setup, scaled down without compromises, and is full of features.</p>
+<p>For me, an additional requirement to make it a real deployment is that it should support stateful services. One of the things I like about kubernetes is that <a href="https://kubernetes.io/docs/concepts/storage/persistent-volumes/">persistent volumes</a> are a first-class construct supported in various real-world ways. Since I’m working with a tight budget and a single server, I narrowed my search to open source, software-defined storage solutions. <a href="https://ceph.com/">Ceph</a> workeds out well for me since it was easy to setup, scaled down without compromises, and is full of featurea.</p>
 <p>In this article I’ll show how to use a little libvirt+KVM+QEMU wrapper script to create three VMs, deploy kubernetes using <code>kube-adm</code> and overlay a ceph cluster using <code>ceph-deploy</code>. The setup might appear tedious, but the benefits and ease of kubernetes usage afterwards are well worth it</p>
 <h2 id="my-environment">My environment</h2>
 <p>If you’re following along, it might help to know what I’m using to see how that aligns with what you’re using. My one and only home server is an <a href="https://www.intel.com/content/www/us/en/products/boards-kits/nuc.html">Intel NUC</a> with</p>
@@ -12,7 +12,7 @@
 <li>i5 dual-core, hyperthreaded processor</li>
 <li>16 GB RAM</li>
 <li>240 GB SSD with about 100 GB dedicated to VM images</li>
-<li>Ubuntu Xenial 16.0.4.4</li>
+<li>Ubuntu Xenial 16.04.4</li>
 <li>Kernel 4.4.0-124</li>
 </ul>
 <p>It has plenty of RAM for three VMs, but I’m going to be knowingly overcommitting the vCPU count of 6 (2 x 3 VMs) since there’s only 4 logical processors on my system. I’m not going to be running stressful workloads, so hopefully that works out.</p>
@@ -114,16 +114,9 @@ C76F05E7-0289-4479-91CA-3D47A48096F4
 </code></pre>
 <p>Use the installation snippet provided in the <a href="https://kubernetes.io/docs/tasks/tools/install-kubeadm/#installing-docker">Installing Docker</a> section.</p>
 <p>Still in the interactive sudo session, <a href="https://kubernetes.io/docs/tasks/tools/install-kubeadm/#installing-kubeadm-kubelet-and-kubectl">install kubeadm, kubelet, and kubectl</a>.</p>
-<p>According to <code>docker info</code> the cgroup driver used is <code>cgroupfs</code> so use their provided snippet to adjust the kubelet config:</p>
-<pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sed</span> -i <span class="token string">"s/cgroup-driver=systemd/cgroup-driver=cgroupfs/g"</span> /etc/systemd/system/kubelet.service.d/10-kubeadm.conf
-</code></pre>
-<p>Then restart kubelet</p>
-<pre class=" language-bash"><code class="prism  language-bash">systemctl daemon-reload
-systemctl restart kubelet
-</code></pre>
 <p>Repeat the same for the other nodes <a href="https://kubernetes.io/docs/tasks/tools/install-kubeadm/#installing-docker">installing Docker</a> and steps after that.</p>
 <h3 id="create-the-cluster">Create the cluster</h3>
-<p><strong>Before</strong> running <code>kubeadm init</code> skip to the <a href="https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network">pod network section</a> to see what parameters should be passed. I’m going to use Flannel, so I’ll pass <code>--pod-network-cidr=10.244.0.0/16</code>.  You can find more information about <a href="https://coreos.com/flannel/docs/latest/kubernetes.html">Flannel on kubernetes here</a>.</p>
+<p><strong>Before</strong> running <code>kubeadm init</code> skip to the <a href="https://kubernetes.io/docs/setup/independent/create-cluster-kubeadm/#pod-network">pod network section</a> to see what parameters should be passed. I’m going to use kube-router, so I’ll pass <code>--pod-network-cidr=10.244.0.0/16</code>.  You can find more information about using <a href="https://github.com/cloudnativelabs/kube-router/blob/master/docs/kubeadm.md">kube-router with kubeadm here</a>.</p>
 <p>The full kubeadm command to run is:</p>
 <pre class=" language-bash"><code class="prism  language-bash"><span class="token function">sudo</span> kubeadm init --pod-network-cidr<span class="token operator">=</span>10.244.0.0/16
 </code></pre>
@@ -133,22 +126,11 @@ systemctl restart kubelet
 <span class="token function">sudo</span> <span class="token function">chown</span> <span class="token variable"><span class="token variable">$(</span><span class="token function">id</span> -u<span class="token variable">)</span></span><span class="token keyword">:</span><span class="token variable"><span class="token variable">$(</span><span class="token function">id</span> -g<span class="token variable">)</span></span> <span class="token variable">$HOME</span>/.kube/config
 </code></pre>
 <p>Be sure to note the <code>kubeadm join</code> command it provided since it will be used when joining the other two VMs to the cluster.</p>
-<p>Now you can install the Flannel networking</p>
-<pre class=" language-bash"><code class="prism  language-bash">kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
+<p>Now you can install the networking add-on, kube-router in this case:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubectl apply -f https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/kubeadm-kuberouter.yaml
 </code></pre>
-<p>After about 30 seconds the kube-dns pod should have a running status with three instances like this:</p>
-<pre class=" language-bash"><code class="prism  language-bash">$ kubectl get pods --all-namespaces
-NAMESPACE     NAME                              READY     STATUS    RESTARTS   AGE
-kube-system   etcd-nuc-vm1                      1/1       Running   0          4m
-kube-system   kube-apiserver-nuc-vm1            1/1       Running   0          4m
-kube-system   kube-controller-manager-nuc-vm1   1/1       Running   0          5m
-kube-system   kube-dns-86f4d74b45-l4dgd         3/3       Running   0          5m
-kube-system   kube-flannel-ds-zlwg5             1/1       Running   0          59s
-kube-system   kube-proxy-2sqmn                  1/1       Running   0          5m
-kube-system   kube-scheduler-nuc-vm1            1/1       Running   0          5m
-</code></pre>
-<p>Since I’m running kubernetes on a budget, I am going to mark the master node as being eligible for running pods:</p>
-<pre class=" language-bash"><code class="prism  language-bash">kubectl taint nodes --all node-role.kubernetes.io/master-
+<p>After about 30 seconds you should see the <code>kube-router</code> pods running using:</p>
+<pre class=" language-bash"><code class="prism  language-bash">kubectl get pods --all-namespaces -w
 </code></pre>
 <h3 id="join-the-other-two-vms-to-the-kubernetes-cluster">Join the other two VMs to the kubernetes cluster</h3>
 <p>ssh to the next VM and become root with <code>sudo -i</code>. Then use the <code>kubectl join</code> command output from the <code>init</code> call earlier, such as</p>
@@ -292,7 +274,7 @@ kubectl apply -f rbac
 <p>Verify that the claim was provisioned and is bound by using</p>
 <pre class=" language-bash"><code class="prism  language-bash">kubectl describe pvc claim1
 </code></pre>
-<p>Let’s test out the persistent volume backed by ceph rbd by running a little busybox container that just sleeps so that we can <code>exec</code> into it:</p>
+<p>Let’s test otf the persistent volume backed by ceph rbd by running a little busybox container that just sleeps so that we can <code>exec</code> into it:</p>
 <pre class=" language-yaml"><code class="prism  language-yaml"><span class="token key atrule">apiVersion</span><span class="token punctuation">:</span> v1
 <span class="token key atrule">kind</span><span class="token punctuation">:</span> Pod
 <span class="token key atrule">metadata</span><span class="token punctuation">:</span>
