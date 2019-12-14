@@ -18,3 +18,7 @@ linkedin_username: geoff-bourne
 
 # Build settings
 markdown: kramdown
+
+google_analytics: UA-36572300-2
+show_downloads: true
+theme: jekyll-theme-tactile
