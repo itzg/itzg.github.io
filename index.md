@@ -1,3 +1,3 @@
-# Welcome
-
-Some content will go here
+---
+layout: home
+---

@@ -15,10 +15,15 @@ url: "https://itzg.github.io" # the base hostname & protocol for your site
 twitter_username: itzg
 github_username:  itzg
 linkedin_username: geoff-bourne
+google_analytics: UA-36572300-3
 
 # Build settings
 markdown: kramdown
 
-google_analytics: UA-36572300-2
-show_downloads: true
-theme: jekyll-theme-tactile
+theme: minima
+
+minima:
+  social_link:
+    github: itzg
+    twitter: itzg
+    linkedin: geoff-bourne
